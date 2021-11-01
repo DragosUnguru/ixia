@@ -35,14 +35,14 @@ public class Driver {
      */
     private static void solve(List<Integer> queries, Map<Integer, String> mapping) {
         System.out.println(queries.stream().map(query ->
-                getResult(getDivisors(query), mapping, query.toString())).collect(Collectors.toList()));
+                getResult(getDivisorsButBetter(query), mapping, query.toString())).collect(Collectors.toList()));
     }
 
     /**
      * Takes advantage of the fact that we can find the divisors in pairs of two.
      * To maintain the descending order of the found pairs we're making use of a
      * maximum-heap structure. Therefore, we get all the divisors in a descending order
-     * in a final complexity of O(sqrt(n)log(n)), much smaller than O(n).
+     * in a final complexity of O(sqrt(n)log(divs)), much smaller than O(n).
      *
      * @param number integer whose divisors are computed.
      * @return an {@link Iterable} implementation that provides the divisors in the correct prioritized order.
@@ -67,6 +67,37 @@ public class Driver {
         }
 
         return priorityQueue;
+    }
+
+    /**
+     * Better, O(sqrt(n)) implementation of fetching the divisors.
+     *
+     * @param number integer whose divisors are computed.
+     * @return an {@link Iterable} implementation that provides the divisors in the correct prioritized order.
+     */
+    private static Iterable<Integer> getDivisorsButBetter(Integer number) {
+        List<Integer> descendingDivs = new ArrayList<>();
+        List<Integer> ascendingDivs = new ArrayList<>();
+
+        int i;
+        for (i = (int) Math.sqrt(number); i > 1; --i) {
+            if (number % i == 0) {
+                descendingDivs.add(i);
+
+                if (number / i != i) {
+                    ascendingDivs.add(number / i);
+                }
+            }
+        }
+
+        // The number itself is the biggest valid divisor. Append to end of ascending divisors.
+        ascendingDivs.add(number);
+
+        // Construct result as the appended set of the reversed ascending divisors and the descending ones.
+        Collections.reverse(ascendingDivs);
+        ascendingDivs.addAll(descendingDivs);
+
+        return ascendingDivs;
     }
 
     /**
